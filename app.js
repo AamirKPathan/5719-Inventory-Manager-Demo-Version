@@ -368,7 +368,7 @@ function openAdjustDialog(item) {
   $("adjustDialog").showModal();
 }
 
-function readFileAsDataURL(file) {
+function cropImageToSquare(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve("");
 
@@ -383,7 +383,36 @@ function readFileAsDataURL(file) {
     }
 
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+        const sourceX = (image.naturalWidth - sourceSize) / 2;
+        const sourceY = (image.naturalHeight - sourceSize) / 2;
+        const outputSize = Math.min(sourceSize, 800);
+        const canvas = document.createElement("canvas");
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+
+        const context = canvas.getContext("2d");
+        context.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          sourceSize,
+          sourceSize,
+          0,
+          0,
+          outputSize,
+          outputSize
+        );
+
+        const format = file.type === "image/png" ? "image/png" : "image/jpeg";
+        resolve(canvas.toDataURL(format, 0.9));
+      };
+      image.onerror = () => reject(new Error("Could not process the image."));
+      image.src = String(reader.result);
+    };
     reader.onerror = () => reject(new Error("Could not read the image."));
     reader.readAsDataURL(file);
   });
@@ -473,7 +502,7 @@ $("itemForm").addEventListener("submit", async (event) => {
 
   try {
     const imageData = file
-      ? await readFileAsDataURL(file)
+      ? await cropImageToSquare(file)
       : oldItem?.imageData || "";
 
     const item = {

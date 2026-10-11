@@ -3,12 +3,14 @@
 
 A browser-based inventory tracker for FRC Team 5719.
 
+Live demo: https://aamirkpathan.github.io/5719-Inventory-Manager-Demo-Version/
+
 ## Features
 
 - Add, edit, search, and delete inventory items.
 - Organize items into robotics-specific categories.
 - Record category-specific dimensions and specifications.
-- Add an image using an online URL or upload an image.
+- Add an image using an online URL or upload an image. Uploaded images are centered and cropped to a square automatically.
 - Record sign-outs and returns using a person's name.
 - Automatically record transaction date and time.
 - Track stock adjustments.

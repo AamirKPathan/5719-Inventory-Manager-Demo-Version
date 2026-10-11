@@ -7,7 +7,9 @@
   --border: #303949;
   --text: #f2f4f8;
   --muted: #9aa6b8;
-  --accent: #f0a52b;
+  --accent: #ed6b9a;
+  --accent-hover: #ff91b6;
+  --accent-soft: #482638;
   --danger: #ff7373;
   --success: #64d6a1;
 }
@@ -51,15 +53,20 @@ button {
 }
 
 .brand-icon {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 54px;
   height: 54px;
   background: var(--accent);
-  color: #17130b;
   border-radius: 12px;
-  font-size: 17px;
-  font-weight: 900;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .brand h1 {
@@ -130,12 +137,12 @@ button {
 }
 
 .primary {
-  color: #211707;
+  color: #2a0f1c;
   background: var(--accent);
 }
 
 .primary:hover {
-  background: #ffc15a;
+  background: var(--accent-hover);
 }
 
 .secondary {
@@ -233,6 +240,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .inventory-grid {
@@ -298,8 +306,8 @@ textarea:focus {
 }
 
 .stock-badge.low-stock {
-  background: #47371e;
-  color: #ffd18a;
+  background: #4a2737;
+  color: #ffb5d0;
 }
 
 .stock-badge.out-of-stock {
