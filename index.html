@@ -1,8 +1,244 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team 5719 | Inventory Manager</title>
-    link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131a">
+  <title>Team 5719 | Inventory Tracker</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">5719</div>
+      <div>
+        <h1>Inventory Tracker</h1>
+        <p>FRC TEAM 5719</p>
+      </div>
+    </div>
+    <span class="status-pill">TEAM INVENTORY</span>
+  </header>
+
+  <main class="container">
+    <section class="welcome">
+      <div>
+        <p class="eyebrow">ROBOTICS WORKSHOP</p>
+        <h2>Parts inventory</h2>
+        <p class="muted">Track stock, manage parts, and record checkouts.</p>
+      </div>
+      <button id="addItemBtn" class="primary">+ Add item</button>
+    </section>
+
+    <section class="stats">
+      <article class="stat-card">
+        <span>Total items</span>
+        <strong id="totalItems">0</strong>
+        <small>Unique inventory entries</small>
+      </article>
+      <article class="stat-card">
+        <span>Total quantity</span>
+        <strong id="totalQuantity">0</strong>
+        <small>Across all inventory</small>
+      </article>
+      <article class="stat-card">
+        <span>Low stock</span>
+        <strong id="lowStock">0</strong>
+        <small>Items needing attention</small>
+      </article>
+      <article class="stat-card">
+        <span>Checked out</span>
+        <strong id="checkedOut">0</strong>
+        <small>Units currently signed out</small>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h3>Inventory</h3>
+          <p class="muted">Browse and update team parts.</p>
+        </div>
+        <button id="exportBtn" class="secondary">Export CSV</button>
+      </div>
+
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Search parts...">
+        <select id="categoryFilter">
+          <option value="">All categories</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All stock levels</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+          <option value="available">In stock</option>
+        </select>
+      </div>
+
+      <div id="inventoryGrid" class="inventory-grid"></div>
+      <p id="emptyInventory" class="empty hidden">No matching inventory items.</p>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h3>Recent activity</h3>
+          <p class="muted">Sign-outs, returns, and stock adjustments.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date and time</th>
+              <th>Action</th>
+              <th>Item</th>
+              <th>Person</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+          <tbody id="activityBody"></tbody>
+        </table>
+      </div>
+      <p id="emptyActivity" class="empty hidden">No activity recorded yet.</p>
+    </section>
+
+    <footer>
+      FRC Team 5719 Inventory Tracker · Prototype
+      <span>Data is saved in this browser only.</span>
+    </footer>
+  </main>
+
+  <dialog id="itemDialog">
+    <form id="itemForm">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">INVENTORY MANAGEMENT</p>
+          <h3 id="itemDialogTitle">Add inventory item</h3>
+        </div>
+        <button type="button" class="icon-button" data-close="itemDialog">✕</button>
+      </div>
+
+      <input type="hidden" id="itemId">
+
+      <label>
+        Item name *
+        <input id="itemName" required maxlength="100" placeholder="e.g. 1/2 inch hex shaft">
+      </label>
+
+      <label>
+        Category *
+        <select id="itemCategory" required></select>
+      </label>
+
+      <div class="form-row">
+        <label>
+          Quantity in stock *
+          <input id="itemQuantity" type="number" min="0" step="1" required value="0">
+        </label>
+        <label>
+          Low-stock threshold
+          <input id="itemThreshold" type="number" min="0" step="1" value="2">
+        </label>
+      </div>
+
+      <label>
+        Image URL (optional)
+        <input id="itemImageUrl" type="url" placeholder="https://example.com/part.jpg">
+      </label>
+
+      <label>
+        Or upload an image
+        <input id="itemImageFile" type="file" accept="image/*">
+      </label>
+
+      <label>
+        Notes
+        <textarea id="itemNotes" rows="2" placeholder="Brand, supplier, part number, etc."></textarea>
+      </label>
+
+      <div id="specFields" class="spec-grid"></div>
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary" data-close="itemDialog">Cancel</button>
+        <button type="submit" class="primary">Save item</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="transactionDialog">
+    <form id="transactionForm">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">STOCK TRANSACTION</p>
+          <h3 id="transactionTitle">Sign out item</h3>
+        </div>
+        <button type="button" class="icon-button" data-close="transactionDialog">✕</button>
+      </div>
+
+      <input type="hidden" id="transactionItemId">
+      <input type="hidden" id="transactionType">
+
+      <p id="transactionItemName" class="transaction-item"></p>
+
+      <label>
+        Person's name *
+        <input id="transactionPerson" required maxlength="100" placeholder="Enter name">
+      </label>
+
+      <label>
+        Quantity *
+        <input id="transactionQuantity" type="number" min="1" step="1" required value="1">
+      </label>
+
+      <p class="muted small">The date and time are recorded automatically.</p>
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary" data-close="transactionDialog">Cancel</button>
+        <button type="submit" class="primary">Record transaction</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="adjustDialog">
+    <form id="adjustForm">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">INVENTORY MANAGEMENT</p>
+          <h3>Adjust stock</h3>
+        </div>
+        <button type="button" class="icon-button" data-close="adjustDialog">✕</button>
+      </div>
+
+      <input type="hidden" id="adjustItemId">
+      <p id="adjustItemName" class="transaction-item"></p>
+
+      <label>
+        Adjustment
+        <select id="adjustMode">
+          <option value="add">Add to stock</option>
+          <option value="remove">Remove from stock</option>
+          <option value="set">Set exact stock quantity</option>
+        </select>
+      </label>
+
+      <label>
+        Quantity *
+        <input id="adjustQuantity" type="number" min="0" step="1" required value="1">
+      </label>
+
+      <label>
+        Person's name *
+        <input id="adjustPerson" required maxlength="100" placeholder="Enter name">
+      </label>
+
+      <div class="dialog-actions">
+        <button type="button" class="secondary" data-close="adjustDialog">Cancel</button>
+        <button type="submit" class="primary">Save adjustment</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
